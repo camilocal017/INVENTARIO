@@ -83,7 +83,7 @@ export function ProductTable({ products, onStockChange, onRecordSale }: ProductT
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'MXN',
     }).format(price);
   };
 
@@ -93,18 +93,18 @@ export function ProductTable({ products, onStockChange, onRecordSale }: ProductT
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Product</TableHead>
+              <TableHead>Producto</TableHead>
               <TableHead className="hidden md:table-cell">Description</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Precio</TableHead>
+              <TableHead>Cantidad</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
-                  No products found.
+                  Producto no encontrado.
                 </TableCell>
               </TableRow>
             ) : (
@@ -130,12 +130,12 @@ export function ProductTable({ products, onStockChange, onRecordSale }: ProductT
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleOpenDialog('record-sale', product)}>
                           <ShoppingCart className="mr-2 h-4 w-4" />
-                          Record Sale
+                          Registrar venta
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleOpenDialog('adjust-stock', product)}>
                           <Plus className="mr-2 h-4 w-4" />
                           <Minus className="absolute left-2.5 top-2.5 h-4 w-4" />
-                          Adjust Stock
+                          Ajustar inventario
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -160,7 +160,7 @@ export function ProductTable({ products, onStockChange, onRecordSale }: ProductT
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="quantity" className="text-right">
-                Quantity
+                Cantidad
               </Label>
               <Input
                 id="quantity"
@@ -180,7 +180,7 @@ export function ProductTable({ products, onStockChange, onRecordSale }: ProductT
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">Cancelar</Button>
             </DialogClose>
             <Button onClick={activeDialog === 'adjust-stock' ? handleAdjustStock : handleRecordSale}>
               Confirm

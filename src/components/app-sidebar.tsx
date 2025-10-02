@@ -16,8 +16,8 @@ import { LayoutDashboard, FileText, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const menuItems = [
-  { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/reports', icon: FileText, label: 'Reports' },
+  { href: '/', icon: LayoutDashboard, label: 'Inventario' },
+  { href: '/reports', icon: FileText, label: 'Reportes' },
 ];
 
 export function AppSidebar() {
@@ -29,7 +29,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-2 p-2">
           <Icons.Logo className="size-8" />
           <span className="text-lg font-semibold text-sidebar-foreground">
-            Kitchen Command
+            Inventario cami
           </span>
         </div>
       </SidebarHeader>

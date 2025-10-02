@@ -92,7 +92,7 @@ export function AddProductForm({ onAddProduct, onFinished }: AddProductFormProps
             name="stock"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Initial Stock</FormLabel>
+                <FormLabel>Inventario Inicial</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
                 </FormControl>
@@ -103,9 +103,9 @@ export function AddProductForm({ onAddProduct, onFinished }: AddProductFormProps
         </div>
         <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onFinished}>
-            Cancel
+            Cancelar
           </Button>
-          <Button type="submit">Add Product</Button>
+          <Button type="submit">Agregar Producto</Button>
         </div>
       </form>
     </Form>
