@@ -82,6 +82,13 @@ export function useInventoryStore() {
     return { success: true, message: 'Sale recorded successfully' };
   };
 
+  const removeProduct = (productId: string) => {
+  const filteredSales = sales.filter((s) => s.productId !== productId);
+  updateSales(filteredSales);
+
+  const filtered = products.filter((p) => p.id !== productId);
+  updateProducts(filtered);}
+
   return {
     isInitialized,
     products,
@@ -89,5 +96,6 @@ export function useInventoryStore() {
     addProduct,
     updateProductStock,
     recordSale,
+    removeProduct,
   };
 }

@@ -52,12 +52,12 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Products">
+      <PageHeader title="Productos">
         <div className="relative ml-auto flex-1 md:grow-0">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            type="search"
-            placeholder="Search products..."
+            type="Buscar"
+            placeholder="Buscar productos..."
             className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -65,7 +65,7 @@ export default function DashboardPage() {
         </div>
         <Button onClick={() => setAddDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Product
+          Añadir producto
         </Button>
       </PageHeader>
       <main className="flex-1 p-4 sm:p-6">
