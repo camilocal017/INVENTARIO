@@ -263,7 +263,7 @@ export default function ReportsPage() {
 
               {/* Tabla con ventas filtradas */}
               <div className="rounded-lg border">
-                <Table className="min-w-[720px]">
+                <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fecha</TableHead>

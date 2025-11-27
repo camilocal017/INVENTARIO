@@ -136,7 +136,7 @@ export function ProductTable({
   return (
     <>
       <div className="rounded-lg border">
-        <Table className="min-w-[720px]">
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Producto</TableHead>
