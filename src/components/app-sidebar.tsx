@@ -29,7 +29,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-2 p-2">
           <Icons.Logo className="size-8" />
           <span className="text-lg font-semibold text-sidebar-foreground">
-            Inventario cami
+            Inventario inoxidables
           </span>
         </div>
       </SidebarHeader>

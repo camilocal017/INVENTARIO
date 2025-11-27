@@ -136,7 +136,7 @@ export function ProductTable({
   return (
     <>
       <div className="rounded-lg border">
-        <Table>
+        <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
               <TableHead>Producto</TableHead>
@@ -146,7 +146,7 @@ export function ProductTable({
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="[&_tr:nth-child(odd)]:bg-muted/20">
             {products.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">

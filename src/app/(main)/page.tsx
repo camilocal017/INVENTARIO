@@ -53,17 +53,17 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title="Productos">
-        <div className="relative ml-auto flex-1 md:grow-0">
+        <div className="relative flex w-full flex-1 min-w-0 md:grow-0">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="Buscar"
             placeholder="Buscar productos..."
-            className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+            className="w-full rounded-lg bg-background pl-8 md:w-[220px] lg:w-[320px]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button onClick={() => setAddDialogOpen(true)}>
+        <Button className="flex-shrink-0" onClick={() => setAddDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Añadir producto
         </Button>

@@ -158,13 +158,7 @@ export default function ReportsPage() {
         setReport(msg);
       }
     } catch (err) {
-      console.error(err);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No se pudo generar el reporte. Mostrando resumen local.',
-      });
-
+      console.error('Fallo generateSalesReport, usando resumen local:', err);
       const msg =
         `Resumen (local)\n\n` +
         `Periodo: ${format(startOfDay(date!.from!), 'dd/MM/yyyy')} - ${format(
@@ -216,7 +210,7 @@ export default function ReportsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col items-start gap-4 sm:flex-row">
+              <div className="flex flex-col flex-wrap items-start gap-3 sm:flex-row sm:items-center">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -253,18 +247,23 @@ export default function ReportsPage() {
                   </PopoverContent>
                 </Popover>
 
-                <Button onClick={handleGenerateReport} disabled={isLoading}>
+                <Button className="w-full sm:w-auto" onClick={handleGenerateReport} disabled={isLoading}>
                   {isLoading ? 'Generando…' : 'Generar reporte'}
                 </Button>
 
-                <Button variant="secondary" onClick={exportCSV} disabled={!filteredSales.length}>
+                <Button
+                  className="w-full sm:w-auto"
+                  variant="secondary"
+                  onClick={exportCSV}
+                  disabled={!filteredSales.length}
+                >
                   Exportar CSV
                 </Button>
               </div>
 
               {/* Tabla con ventas filtradas */}
               <div className="rounded-lg border">
-                <Table>
+                <Table className="min-w-[720px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fecha</TableHead>
@@ -274,7 +273,7 @@ export default function ReportsPage() {
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <TableBody className="[&_tr:nth-child(odd)]:bg-muted/20">
                     {filteredSales.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="h-24 text-center">
