@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Trash2 } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
 import { PageHeader } from '@/components/page-header';
@@ -56,10 +56,11 @@ function toCSV(rows: Record<string, string | number>[]) {
 }
 
 export default function ReportsPage() {
-  const { sales, isInitialized } = useInventoryStore();
+  const { sales, isInitialized, deleteSale } = useInventoryStore();
   const [date, setDate] = React.useState<DateRange | undefined>();
   const [report, setReport] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [deletingSaleId, setDeletingSaleId] = React.useState<string | null>(null);
   const { toast } = useToast();
 
   const hasRange = Boolean(date?.from && date?.to);
@@ -79,6 +80,27 @@ export default function ReportsPage() {
     () => filteredSales.reduce((acc, s) => acc + s.totalAmount, 0),
     [filteredSales]
   );
+
+  const handleDeleteSale = async (saleId: string) => {
+    if (!confirm('¿Eliminar esta venta?')) return;
+
+    setDeletingSaleId(saleId);
+    const ok = await deleteSale(saleId);
+    setDeletingSaleId(null);
+
+    if (ok) {
+      toast({
+        title: 'Venta eliminada',
+        description: 'La venta se eliminó y la lista se actualizó.',
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'No se pudo eliminar',
+        description: 'Intenta nuevamente en unos segundos.',
+      });
+    }
+  };
 
   const handleGenerateReport = async () => {
     if (!hasRange) {
@@ -249,12 +271,13 @@ export default function ReportsPage() {
                       <TableHead>Producto</TableHead>
                       <TableHead>Cantidad</TableHead>
                       <TableHead className="text-right">Total</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredSales.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
+                        <TableCell colSpan={5} className="h-24 text-center">
                           No hay ventas en este periodo.
                         </TableCell>
                       </TableRow>
@@ -265,6 +288,17 @@ export default function ReportsPage() {
                           <TableCell>{s.productName}</TableCell>
                           <TableCell>{s.quantity}</TableCell>
                           <TableCell className="text-right">{money(s.totalAmount)}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => void handleDeleteSale(s.id)}
+                              disabled={deletingSaleId === s.id}
+                              aria-label="Eliminar venta"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}

@@ -55,10 +55,11 @@ export function ProductTable({
     null
   );
   const [quantity, setQuantity] = React.useState(1);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const { toast } = useToast();
 
-  // 👇 NUEVO: tomamos removeProduct del hook
-const { removeProduct } = useInventoryStore();
+  // Nuevo: tomamos removeProduct del hook
+  const { removeProduct } = useInventoryStore();
 
 
   const handleOpenDialog = (
@@ -104,9 +105,21 @@ const { removeProduct } = useInventoryStore();
   };
 
   // 👇 NUEVO: eliminar producto
-  const handleDelete = (product: Product) => {
+  const handleDelete = async (product: Product) => {
     if (!confirm(`¿Eliminar "${product.name}"?`)) return;
-    removeProduct(product.id);
+    setDeletingId(product.id);
+    const result = await removeProduct(product.id);
+    setDeletingId(null);
+
+    if (result?.success === false) {
+      toast({
+        variant: "destructive",
+        title: "No se pudo eliminar",
+        description: "Intenta nuevamente en unos segundos.",
+      });
+      return;
+    }
+
     toast({
       title: "Producto eliminado",
       description: `"${product.name}" fue eliminado del inventario.`,
@@ -181,7 +194,8 @@ const { removeProduct } = useInventoryStore();
                         {/* 👇 NUEVO: opción para eliminar */}
                         <DropdownMenuItem
                           className="text-red-600 focus:text-red-600"
-                          onClick={() => handleDelete(product)}
+                          disabled={deletingId === product.id}
+                          onClick={() => void handleDelete(product)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Eliminar

@@ -47,3 +47,39 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+// =====================
+//      DELETE SALES
+// =====================
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const saleId = searchParams.get("id");
+    const productId = searchParams.get("productId");
+
+    if (!saleId && !productId) {
+      return NextResponse.json(
+        { error: "Missing id or productId" },
+        { status: 400 }
+      );
+    }
+
+    const baseQuery = supabase.from("sales").delete();
+    const { data, error } = saleId
+      ? await baseQuery.eq("id", saleId).select("id")
+      : await baseQuery.eq("productId", productId!).select("id");
+
+    if (error) {
+      console.error("Supabase delete error:", error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json(
+      { deleted: data?.length ?? 0 },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("Server DELETE error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}

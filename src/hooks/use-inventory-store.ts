@@ -122,13 +122,61 @@ export function useInventoryStore() {
     return { success: true, message: "Sale recorded successfully" };
   };
 
-  const removeProduct = (productId: string) => {
-    // Quitamos las ventas de ese producto en el estado (luego si quieres hacemos DELETE en Supabase)
-    const filteredSales = sales.filter((s) => s.productId !== productId);
-    updateSales(filteredSales);
+  const deleteSale = async (saleId: string) => {
+    try {
+      const res = await fetch(`/api/sales?id=${encodeURIComponent(saleId)}`, {
+        method: "DELETE",
+      });
 
-    const filteredProducts = products.filter((p) => p.id !== productId);
-    updateProducts(filteredProducts);
+      if (!res.ok) {
+        console.error(
+          "Failed to delete sale in Supabase:",
+          await res.text()
+        );
+        return false;
+      }
+
+      setSales((prev) => prev.filter((sale) => sale.id !== saleId));
+      return true;
+    } catch (error) {
+      console.error("Failed to delete sale in Supabase:", error);
+      return false;
+    }
+  };
+
+  const removeProduct = async (productId: string) => {
+    // Quitamos las ventas relacionadas y el producto del estado inmediatamente
+    setSales((prev) => prev.filter((s) => s.productId !== productId));
+    setProducts((prev) => {
+      const filtered = prev.filter((p) => p.id !== productId);
+      try {
+        localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(filtered));
+      } catch (error) {
+        console.error("Failed to save products to localStorage:", error);
+      }
+      return filtered;
+    });
+
+    // Eliminamos las ventas asociadas en Supabase
+    try {
+      const res = await fetch(
+        `/api/sales?productId=${encodeURIComponent(productId)}`,
+        { method: "DELETE" }
+      );
+
+      if (!res.ok) {
+        console.error(
+          "Failed to delete related sales from Supabase:",
+          await res.text()
+        );
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to delete related sales from Supabase:", error);
+      return { success: false };
+    }
   };
 
   return {
@@ -138,6 +186,7 @@ export function useInventoryStore() {
     addProduct,
     updateProductStock,
     recordSale,
+    deleteSale,
     removeProduct,
   };
 }
