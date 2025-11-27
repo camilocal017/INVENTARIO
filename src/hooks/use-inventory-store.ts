@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import type { Product, Sale } from "@/lib/types";
 import { INITIAL_PRODUCTS } from "@/lib/data";
 
-const PRODUCTS_STORAGE_KEY = "kitchen-command-products";
-
 export function useInventoryStore() {
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
@@ -13,20 +11,18 @@ export function useInventoryStore() {
 
   useEffect(() => {
     const init = async () => {
-      // 1) Productos: se leen de localStorage (con fallback a INITIAL_PRODUCTS)
+      // 1) Productos: se leen desde la API (/api/products -> Supabase) con fallback local
       try {
-        const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-        if (storedProducts) {
-          setProducts(JSON.parse(storedProducts));
+        const res = await fetch("/api/products");
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data.products ?? []);
         } else {
+          console.error("Failed to load products from API:", await res.text());
           setProducts(INITIAL_PRODUCTS);
-          localStorage.setItem(
-            PRODUCTS_STORAGE_KEY,
-            JSON.stringify(INITIAL_PRODUCTS)
-          );
         }
       } catch (error) {
-        console.error("Failed to access localStorage:", error);
+        console.error("Failed to load products from API:", error);
         setProducts(INITIAL_PRODUCTS);
       }
 
@@ -52,32 +48,59 @@ export function useInventoryStore() {
     void init();
   }, []);
 
-  const updateProducts = useCallback((newProducts: Product[]) => {
-    setProducts(newProducts);
-    try {
-      localStorage.setItem(
-        PRODUCTS_STORAGE_KEY,
-        JSON.stringify(newProducts)
-      );
-    } catch (error) {
-      console.error("Failed to save products to localStorage:", error);
-    }
-  }, []);
-
   const updateSales = useCallback((newSales: Sale[]) => {
     setSales(newSales);
   }, []);
 
-  const addProduct = (product: Omit<Product, "id">) => {
-    const newProduct: Product = { ...product, id: `prod_${Date.now()}` };
-    updateProducts([...products, newProduct]);
+  const addProduct = async (product: Omit<Product, "id">) => {
+    const tempId = `temp_${Date.now()}`;
+    const optimistic: Product = { ...product, id: tempId };
+    setProducts((prev) => [...prev, optimistic]);
+
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(product),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to create product in Supabase:", await res.text());
+        setProducts((prev) => prev.filter((p) => p.id !== tempId));
+        return;
+      }
+
+      const data = await res.json();
+      const created: Product = data.product;
+      setProducts((prev) =>
+        prev.map((p) => (p.id === tempId ? created : p))
+      );
+    } catch (error) {
+      console.error("Failed to create product in Supabase:", error);
+      setProducts((prev) => prev.filter((p) => p.id !== tempId));
+    }
   };
 
   const updateProductStock = (productId: string, newStock: number) => {
-    const newProducts = products.map((p) =>
-      p.id === productId ? { ...p, stock: Math.max(0, newStock) } : p
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId ? { ...p, stock: Math.max(0, newStock) } : p
+      )
     );
-    updateProducts(newProducts);
+
+    // Sin esperar el resultado: sincronizamos stock con Supabase
+    void fetch(`/api/products?id=${encodeURIComponent(productId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stock: Math.max(0, newStock) }),
+    }).then(async (res) => {
+      if (!res.ok) {
+        console.error(
+          "Failed to update product stock in Supabase:",
+          await res.text()
+        );
+      }
+    });
   };
 
   const recordSale = (productId: string, quantity: number) => {
@@ -147,27 +170,32 @@ export function useInventoryStore() {
   const removeProduct = async (productId: string) => {
     // Quitamos las ventas relacionadas y el producto del estado inmediatamente
     setSales((prev) => prev.filter((s) => s.productId !== productId));
-    setProducts((prev) => {
-      const filtered = prev.filter((p) => p.id !== productId);
-      try {
-        localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(filtered));
-      } catch (error) {
-        console.error("Failed to save products to localStorage:", error);
-      }
-      return filtered;
-    });
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
 
     // Eliminamos las ventas asociadas en Supabase
     try {
-      const res = await fetch(
+      const salesRes = await fetch(
         `/api/sales?productId=${encodeURIComponent(productId)}`,
         { method: "DELETE" }
       );
 
-      if (!res.ok) {
+      if (!salesRes.ok) {
         console.error(
           "Failed to delete related sales from Supabase:",
-          await res.text()
+          await salesRes.text()
+        );
+        return { success: false };
+      }
+
+      const prodRes = await fetch(
+        `/api/products?id=${encodeURIComponent(productId)}`,
+        { method: "DELETE" }
+      );
+
+      if (!prodRes.ok) {
+        console.error(
+          "Failed to delete product from Supabase:",
+          await prodRes.text()
         );
         return { success: false };
       }
